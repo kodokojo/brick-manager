@@ -95,7 +95,7 @@ public class ServiceModule extends AbstractModule {
                 credentials = instanceProfileCredentialsProvider.getCredentials();
             }
         } catch (RuntimeException e) {
-            LOGGER.warn("Unable to retrieve AWS credentials.");
+            LOGGER.warn("Unable to retrieve AWS credentials.", e);
         }
         return credentials;
     }

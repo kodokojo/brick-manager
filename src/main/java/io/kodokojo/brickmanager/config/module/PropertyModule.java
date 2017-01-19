@@ -46,6 +46,13 @@ public class PropertyModule extends AbstractModule {
         return createConfig(AwsConfig.class, valueProvider);
     }
 
+    @Provides
+    @Singleton
+    OrchestratorConfig provideOrchestratorConfig(PropertyValueProvider valueProvider) {
+        return createConfig(OrchestratorConfig.class, valueProvider);
+    }
+
+
     private <T extends PropertyConfig> T createConfig(Class<T> configClass, PropertyValueProvider valueProvider) {
         PropertyResolver resolver = new PropertyResolver(valueProvider);
         return resolver.createProxy(configClass);

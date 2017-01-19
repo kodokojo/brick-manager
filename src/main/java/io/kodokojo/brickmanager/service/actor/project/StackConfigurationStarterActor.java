@@ -110,7 +110,7 @@ public class StackConfigurationStarterActor extends AbstractActor {
                 msg.getState() == BrickStateEvent.State.ALREADYEXIST
                 ) {
                 */
-            getContext().actorFor(EndpointActor.ACTOR_PATH).tell(msg, self());
+            getContext().actorSelection(EndpointActor.ACTOR_PATH).tell(msg, self());
             nbResponse++;
 
         if (nbResponse == intialMsg.stackConfiguration.getBrickConfigurations().size()) {

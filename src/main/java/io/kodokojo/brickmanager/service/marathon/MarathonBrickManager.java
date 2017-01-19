@@ -49,7 +49,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 
 /*TODO Refacto :
     Move this class to Akka Actor
-    Remove projectRepoitory
+    Remove projectRepository
  */
 public class MarathonBrickManager implements BrickManager {
 
@@ -71,8 +71,6 @@ public class MarathonBrickManager implements BrickManager {
 
     private final BrickConfigurerProvider brickConfigurerProvider;
 
-    private final ProjectRepository projectRepository;
-
     private final boolean constrainByTypeAttribute;
 
     private final String domain;
@@ -80,25 +78,12 @@ public class MarathonBrickManager implements BrickManager {
     private final BrickUrlFactory brickUrlFactory;
 
     @Inject
-    public MarathonBrickManager(MarathonConfig marathonConfig, MarathonServiceLocator marathonServiceLocator, BrickConfigurerProvider brickConfigurerProvider, ProjectRepository projectRepository, boolean constrainByTypeAttribute, String domain, BrickUrlFactory brickUrlFactory) {
-        if (marathonConfig == null) {
-            throw new IllegalArgumentException("marathonConfig must be defined.");
-        }
-        if (marathonServiceLocator == null) {
-            throw new IllegalArgumentException("marathonServiceLocator must be defined.");
-        }
-        if (brickConfigurerProvider == null) {
-            throw new IllegalArgumentException("brickConfigurerProvider must be defined.");
-        }
-        if (projectRepository == null) {
-            throw new IllegalArgumentException("projectRepository must be defined.");
-        }
-        if (isBlank(domain)) {
-            throw new IllegalArgumentException("domain must be defined.");
-        }
-        if (brickUrlFactory == null) {
-            throw new IllegalArgumentException("brickUrlFactory must be defined.");
-        }
+    public MarathonBrickManager(MarathonConfig marathonConfig, MarathonServiceLocator marathonServiceLocator, BrickConfigurerProvider brickConfigurerProvider, boolean constrainByTypeAttribute, String domain, BrickUrlFactory brickUrlFactory) {
+        requireNonNull(marathonConfig, "marathonConfig must be defined.");
+        requireNonNull(marathonServiceLocator, "marathonServiceLocator must be defined.");
+        requireNonNull(brickConfigurerProvider, "brickConfigurerProvider must be defined.");
+        requireNonNull(brickUrlFactory, "brickUrlFactory must be defined.");
+
         this.marathonConfig = marathonConfig;
 
         Retrofit.Builder builder = new Retrofit.Builder().baseUrl(marathonConfig.url());
@@ -117,7 +102,6 @@ public class MarathonBrickManager implements BrickManager {
         marathonRestApi = adapter.create(MarathonRestApi.class);
         this.marathonServiceLocator = marathonServiceLocator;
         this.brickConfigurerProvider = brickConfigurerProvider;
-        this.projectRepository = projectRepository;
         this.constrainByTypeAttribute = constrainByTypeAttribute;
         this.domain = domain;
         this.brickUrlFactory = brickUrlFactory;

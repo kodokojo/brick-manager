@@ -22,9 +22,7 @@ import akka.actor.ActorSystem;
 import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import io.kodokojo.brickmanager.config.module.AkkaModule;
-import io.kodokojo.brickmanager.config.module.PropertyModule;
-import io.kodokojo.brickmanager.config.module.ServiceModule;
+import io.kodokojo.brickmanager.config.module.*;
 import io.kodokojo.brickmanager.service.BrickManager;
 import io.kodokojo.brickmanager.service.actor.EndpointActor;
 import io.kodokojo.commons.config.MicroServiceConfig;
@@ -47,6 +45,7 @@ import java.util.Set;
 public class Launcher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
+    public static final String MOCK = "mock";
 
     public static void main(String[] args) {
 
@@ -54,34 +53,41 @@ public class Launcher {
         Injector propertyInjector = Guice.createInjector(new CommonsPropertyModule(args), new PropertyModule());
         MicroServiceConfig microServiceConfig = propertyInjector.getInstance(MicroServiceConfig.class);
         LOGGER.info("Starting Kodo Kojo {}.", microServiceConfig.name());
-        Injector servicesInjector = propertyInjector.createChildInjector(new UtilityServiceModule(), new EventBusModule(), new DatabaseModule(), new SecurityModule(), new ServiceModule(), new AbstractModule() {
-            @Override
-            protected void configure() {
-                //
-            }
-            @Provides
-            @Singleton
-            BrickManager provideBrickManager() {
-                return new BrickManager() {
-                    @Override
-                    public Set<Service> start(ProjectConfiguration projectConfiguration, StackConfiguration stackConfiguration, BrickConfiguration brickConfiguration) throws BrickAlreadyExist {
-                        return new HashSet<Service>();
-                    }
+        Injector servicesInjector = propertyInjector.createChildInjector(new UtilityServiceModule(), new EventBusModule(), new DatabaseModule(), new SecurityModule(), new ServiceModule());
+        Module orchestratorModule = new MarathonModule();
+        OrchestratorConfig orchestratorConfig = propertyInjector.getInstance(OrchestratorConfig.class);
+        if (MOCK.equals(orchestratorConfig.orchestrator())) {
+            LOGGER.warn("Mocking orchestrator");
+            orchestratorModule = new AbstractModule() {
+                @Override
+                protected void configure() {
+                    //
+                }
+                @Provides
+                @Singleton
+                BrickManager provideBrickManager() {
+                    return new BrickManager() {
+                        @Override
+                        public Set<Service> start(ProjectConfiguration projectConfiguration, StackConfiguration stackConfiguration, BrickConfiguration brickConfiguration) throws BrickAlreadyExist {
+                            return new HashSet<>();
+                        }
 
-                    @Override
-                    public BrickConfigurerData configure(ProjectConfiguration projectConfiguration, StackConfiguration stackConfiguration, BrickConfiguration brickConfiguration) throws ProjectConfigurationException {
-                        String domaine = projectConfiguration.getName() + "-" + stackConfiguration.getName() + ".kodokojo.dev";
-                        return new BrickConfigurerData(projectConfiguration.getName(), stackConfiguration.getName(), "http://"+domaine, domaine, IteratorUtils.toList(projectConfiguration.getAdmins()), IteratorUtils.toList(projectConfiguration.getUsers()));
-                    }
+                        @Override
+                        public BrickConfigurerData configure(ProjectConfiguration projectConfiguration, StackConfiguration stackConfiguration, BrickConfiguration brickConfiguration) throws ProjectConfigurationException {
+                            String domaine = projectConfiguration.getName() + "-" + stackConfiguration.getName() + ".kodokojo.dev";
+                            return new BrickConfigurerData(projectConfiguration.getName(), stackConfiguration.getName(), "http://"+domaine, domaine, IteratorUtils.toList(projectConfiguration.getAdmins()), IteratorUtils.toList(projectConfiguration.getUsers()));
+                        }
 
-                    @Override
-                    public boolean stop(BrickConfiguration brickDeploymentState) {
-                        return false;
-                    }
-                };
-            }
-        });
-        Injector akkaInjector = servicesInjector.createChildInjector(new AkkaModule());
+                        @Override
+                        public boolean stop(BrickConfiguration brickDeploymentState) {
+                            return false;
+                        }
+                    };
+                }
+            };
+        }
+        Injector orchestratorInjector = servicesInjector.createChildInjector(orchestratorModule);
+        Injector akkaInjector = orchestratorInjector.createChildInjector(new AkkaModule());
         ActorSystem actorSystem = akkaInjector.getInstance(ActorSystem.class);
         ActorRef endpointActor = actorSystem.actorOf(EndpointActor.PROPS(akkaInjector), "endpoint");
         akkaInjector = akkaInjector.createChildInjector(new AbstractModule() {
