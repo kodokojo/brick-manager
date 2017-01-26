@@ -18,10 +18,7 @@
 package io.kodokojo.brickmanager.service.marathon;
 
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import io.kodokojo.commons.config.MarathonConfig;
 import io.kodokojo.commons.model.PortDefinition;
 import io.kodokojo.commons.model.Service;
@@ -30,6 +27,8 @@ import io.kodokojo.commons.JsonUtils;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -39,15 +38,20 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.*;
 
+import static java.util.Objects.requireNonNull;
+
 public class MarathonServiceLocator implements ServiceLocator {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MarathonServiceLocator.class);
 
     private final MarathonServiceLocatorRestApi marathonServiceLocatorRestApi;
 
+    private final MarathonConfig marathonConfig;
+
     @Inject
     public MarathonServiceLocator(MarathonConfig marathonConfig) {
-        if (marathonConfig == null) {
-            throw new IllegalArgumentException("marathonConfig must be defined.");
-        }
+        requireNonNull(marathonConfig, "marathonConfig must be defined.");
+        this.marathonConfig = marathonConfig;
         marathonServiceLocatorRestApi = provideMarathonRestApi(marathonConfig);
     }
 
@@ -72,10 +76,19 @@ public class MarathonServiceLocator implements ServiceLocator {
     public Set<Service> getService(String type, String projectName) {
         Set<Service> res = new HashSet<>();
         Set<String> appIds = new HashSet<>();
+        if(LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Trying to locate service {} from marathon {}.", projectName, marathonConfig.url());
+        }
         Call<JsonObject> allApplicationsCall = marathonServiceLocatorRestApi.getAllApplications();
         try {
             Response<JsonObject> response = allApplicationsCall.execute();
 
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Response from marathon request is: {}", response.toString());
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String jsonBody = gson.toJson(response.body());
+                LOGGER.trace("Body response:\n", jsonBody);
+            }
             JsonArray apps = response.body().getAsJsonArray("apps");
             for (int i = 0; i < apps.size(); i++) {
                 JsonObject app = (JsonObject) apps.get(i);

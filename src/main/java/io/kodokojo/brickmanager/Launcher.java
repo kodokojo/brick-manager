@@ -1,17 +1,17 @@
 /**
  * Kodo Kojo - API frontend which dispatch REST event to Http services or publish event on EvetnBus.
  * Copyright © 2016 Kodo Kojo (infos@kodokojo.io)
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -28,10 +28,7 @@ import io.kodokojo.brickmanager.service.actor.EndpointActor;
 import io.kodokojo.commons.config.MicroServiceConfig;
 import io.kodokojo.commons.config.module.*;
 import io.kodokojo.commons.event.EventBus;
-import io.kodokojo.commons.model.BrickConfiguration;
-import io.kodokojo.commons.model.ProjectConfiguration;
-import io.kodokojo.commons.model.Service;
-import io.kodokojo.commons.model.StackConfiguration;
+import io.kodokojo.commons.model.*;
 import io.kodokojo.commons.service.ProjectConfigurationException;
 import io.kodokojo.commons.service.actor.EventToEndpointGateway;
 import io.kodokojo.commons.service.lifecycle.ApplicationLifeCycleManager;
@@ -63,19 +60,29 @@ public class Launcher {
                 protected void configure() {
                     //
                 }
+
                 @Provides
                 @Singleton
                 BrickManager provideBrickManager() {
                     return new BrickManager() {
                         @Override
                         public Set<Service> start(ProjectConfiguration projectConfiguration, StackConfiguration stackConfiguration, BrickConfiguration brickConfiguration) throws BrickAlreadyExist {
-                            return new HashSet<>();
+                            if (projectConfiguration.getName().endsWith("fail-start")) {
+                                return new HashSet<>();
+                            }
+
+                            Set<Service> res = new HashSet<>();
+                            res.add(new Service(brickConfiguration.getName(), "localhost", new PortDefinition(80)));
+                            return res;
                         }
 
                         @Override
                         public BrickConfigurerData configure(ProjectConfiguration projectConfiguration, StackConfiguration stackConfiguration, BrickConfiguration brickConfiguration) throws ProjectConfigurationException {
+                            if (projectConfiguration.getName().endsWith("fail-configure")) {
+                                throw new ProjectConfigurationException("Failing name pattern.");
+                            }
                             String domaine = projectConfiguration.getName() + "-" + stackConfiguration.getName() + ".kodokojo.dev";
-                            return new BrickConfigurerData(projectConfiguration.getName(), stackConfiguration.getName(), "http://"+domaine, domaine, IteratorUtils.toList(projectConfiguration.getAdmins()), IteratorUtils.toList(projectConfiguration.getUsers()));
+                            return new BrickConfigurerData(projectConfiguration.getName(), projectConfiguration.getIdentifier(), stackConfiguration.getName(), brickConfiguration.getName(), "http://" + domaine, domaine, IteratorUtils.toList(projectConfiguration.getAdmins()), IteratorUtils.toList(projectConfiguration.getUsers()));
                         }
 
                         @Override

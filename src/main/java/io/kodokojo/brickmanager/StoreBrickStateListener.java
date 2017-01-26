@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+@Deprecated
 public class StoreBrickStateListener implements BrickStateEventListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreBrickStateListener.class);

@@ -23,7 +23,6 @@ import io.kodokojo.commons.model.*;
 import io.kodokojo.brickmanager.service.BrickManager;
 import io.kodokojo.commons.service.BrickUrlFactory;
 import io.kodokojo.commons.service.ProjectConfigurationException;
-import io.kodokojo.commons.service.repository.ProjectRepository;
 import okhttp3.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
@@ -45,7 +44,6 @@ import java.io.StringWriter;
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang.StringUtils.isBlank;
 
 /*TODO Refacto :
     Move this class to Akka Actor
@@ -178,7 +176,15 @@ public class MarathonBrickManager implements BrickManager {
                 } else {
                     List<User> users = IteratorUtils.toList(projectConfiguration.getUsers());
                     try {
-                        BrickConfigurerData brickConfigurerData = new BrickConfigurerData(projectConfiguration.getName(), projectConfiguration.getDefaultStackConfiguration().getName(), entrypoint, domain, IteratorUtils.toList(projectConfiguration.getAdmins()), users);
+                        BrickConfigurerData brickConfigurerData = new BrickConfigurerData(projectConfiguration.getName(),
+                                projectConfiguration.getIdentifier(),
+                                projectConfiguration.getDefaultStackConfiguration().getName(),
+                                brickName,
+                                entrypoint,
+                                domain,
+                                IteratorUtils.toList(projectConfiguration.getAdmins()),
+                                users
+                        );
                         brickConfigurerData = configurer.configure(projectConfiguration, brickConfigurerData);
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug("Receive following BrickConfigurerData when configure {} {} : {}", projectConfiguration.getName(), brickConfiguration.getName(), brickConfigurerData);

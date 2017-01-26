@@ -19,7 +19,7 @@ package io.kodokojo.brickmanager.brick.nexus;
 
 import io.kodokojo.brickmanager.BrickConfigurationException;
 import io.kodokojo.brickmanager.BrickConfigurer;
-import io.kodokojo.brickmanager.BrickConfigurerData;
+import io.kodokojo.commons.model.BrickConfigurerData;
 import io.kodokojo.brickmanager.BrickConfigurerHelper;
 import io.kodokojo.commons.model.ProjectConfiguration;
 import io.kodokojo.commons.model.UpdateData;

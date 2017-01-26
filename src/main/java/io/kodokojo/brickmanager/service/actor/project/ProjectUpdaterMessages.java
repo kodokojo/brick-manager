@@ -38,6 +38,11 @@ public interface ProjectUpdaterMessages {
             }
             this.project = project;
         }
+
+        @Override
+        public boolean requireToBeCompleteBeforeAckEventBus() {
+            return false;
+        }
     }
 
     class ListAndUpdateUserToProjectMsg extends EventUserRequestMessage {

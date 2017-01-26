@@ -27,18 +27,18 @@ import com.google.gson.GsonBuilder;
 import com.google.inject.Injector;
 import io.kodokojo.brickmanager.BrickStartContext;
 import io.kodokojo.brickmanager.service.BrickManager;
-import io.kodokojo.brickmanager.service.actor.project.BrickConfigurationStarterActor;
-import io.kodokojo.brickmanager.service.actor.project.ProjectConfigurationStarterActor;
-import io.kodokojo.brickmanager.service.actor.project.ProjectCreatorActor;
-import io.kodokojo.brickmanager.service.actor.project.StackConfigurationStarterActor;
+import io.kodokojo.brickmanager.service.actor.project.*;
 import io.kodokojo.commons.config.ApplicationConfig;
 import io.kodokojo.commons.event.Event;
 import io.kodokojo.commons.event.EventBuilder;
 import io.kodokojo.commons.event.EventBuilderFactory;
 import io.kodokojo.commons.event.GsonEventSerializer;
 import io.kodokojo.commons.event.payload.BrickStateChanged;
+import io.kodokojo.commons.event.payload.ProjectConfigurationChangeUserRequest;
 import io.kodokojo.commons.event.payload.StackStarted;
+import io.kodokojo.commons.event.payload.TypeChange;
 import io.kodokojo.commons.model.ProjectConfiguration;
+import io.kodokojo.commons.model.UpdateData;
 import io.kodokojo.commons.model.User;
 import io.kodokojo.commons.service.BrickUrlFactory;
 import io.kodokojo.commons.service.actor.AbstractEventEndpointActor;
@@ -47,7 +47,12 @@ import io.kodokojo.commons.service.actor.message.EventBusOriginMessage;
 import io.kodokojo.commons.service.actor.message.EventReplyableMessage;
 import io.kodokojo.commons.service.dns.DnsManager;
 import io.kodokojo.commons.service.repository.ProjectFetcher;
+import io.kodokojo.commons.service.repository.UserFetcher;
 import javaslang.control.Try;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static akka.event.Logging.getLogger;
 import static java.util.Objects.requireNonNull;
@@ -60,6 +65,8 @@ public class EndpointActor extends AbstractEventEndpointActor {
 
     private final ProjectFetcher projectFectcher;
 
+    private final UserFetcher userFetcher;
+
     private final EventBuilderFactory eventBuilderFactory;
 
     private final BrickManager brickManager;
@@ -71,9 +78,7 @@ public class EndpointActor extends AbstractEventEndpointActor {
     private final ApplicationConfig applicationConfig;
 
     public static Props PROPS(Injector injector) {
-        if (injector == null) {
-            throw new IllegalArgumentException("injector must be defined.");
-        }
+        requireNonNull(injector, "injector must be defined.");
         return Props.create(EndpointActor.class, injector);
     }
 
@@ -82,6 +87,7 @@ public class EndpointActor extends AbstractEventEndpointActor {
     public EndpointActor(Injector injector) {
         super(injector);
         projectFectcher = injector.getInstance(ProjectFetcher.class);
+        userFetcher = injector.getInstance(UserFetcher.class);
         eventBuilderFactory = injector.getInstance(EventBuilderFactory.class);
         dnsManager = injector.getInstance(DnsManager.class);
         brickUrlFactory = injector.getInstance(BrickUrlFactory.class);
@@ -102,6 +108,12 @@ public class EndpointActor extends AbstractEventEndpointActor {
                 ProjectConfiguration projectConfiguration = projectFectcher.getProjectConfigurationById(event.getPayload());
                 msg = new ProjectConfigurationStarterActor.ProjectConfigurationStartMsg(requester, event, projectConfiguration, true);
                 break;
+            case Event.PROJECTCONFIG_CHANGE_USER_REQUEST:
+                ProjectConfigurationChangeUserRequest payload = event.getPayload(ProjectConfigurationChangeUserRequest.class);
+                payload.setRequest(event);
+                msg = payload;
+                break;
+
         }
         return Try.success(new ActorRefWithMessage(actorRef, msg));
     }
@@ -120,7 +132,7 @@ public class EndpointActor extends AbstractEventEndpointActor {
                     dispatch(msg, sender(), getContext().actorOf(ProjectCreatorActor.PROPS(eventBus, eventBuilderFactory)));
                 })
                 .match(BrickStartContext.class, msg -> {
-                    dispatch(msg, sender(), getContext().actorOf(BrickConfigurationStarterActor.PROPS(brickManager, brickUrlFactory)));
+                    dispatch(msg, sender(), getContext().actorOf(BrickConfigurationStarterActor.PROPS(brickManager, brickUrlFactory, eventBus, eventBuilderFactory)));
                 })
                 .match(BrickStateEvent.class, msg -> {
                     EventBuilder eventBuilder = eventBuilderFactory.create();
@@ -141,6 +153,22 @@ public class EndpointActor extends AbstractEventEndpointActor {
                     eventBuilder.setEventType(Event.STACK_STARTED);
                     StackStarted payload = new StackStarted(msg.getProjectConfiguration().getName(), msg.getStackConfiguration().getName());
                     eventBuilder.setPayload(payload);
+                }).match(ProjectUpdaterMessages.ListAndUpdateUserToProjectMsg.class, msg -> {
+                    dispatch(msg, sender(), getContext().actorOf(ListAndUpdateUserToProjectActor.PROPS(projectFectcher)));
+                }).match(ProjectConfigurationChangeUserRequest.class, msg -> {
+                    msg.getUserIdentifiers().stream()
+                            .map(userFetcher::getUserByIdentifier)
+                            .map(u -> {
+                                UpdateData<User> updateData = null;
+                                if (msg.getTypeChange() == TypeChange.ADD) {
+                                    updateData = new UpdateData<>(null, u);
+                                } else {
+                                    updateData = new UpdateData<>(u, null);
+                                }
+                                return updateData;
+                            })
+                            .map(u -> new ProjectUpdaterMessages.ListAndUpdateUserToProjectMsg(msg.getRequester(), msg.originalEvent(), u))
+                    .forEach(m -> getContext().self().forward(m, getContext()));
                 });
     }
 

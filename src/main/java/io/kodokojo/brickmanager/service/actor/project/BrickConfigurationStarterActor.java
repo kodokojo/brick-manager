@@ -23,10 +23,12 @@ import akka.actor.Props;
 import akka.dispatch.Futures;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
 import io.kodokojo.brickmanager.BrickAlreadyExist;
-import io.kodokojo.brickmanager.BrickConfigurerData;
+import io.kodokojo.commons.event.Event;
+import io.kodokojo.commons.event.EventBuilder;
+import io.kodokojo.commons.event.EventBuilderFactory;
+import io.kodokojo.commons.event.EventBus;
+import io.kodokojo.commons.model.BrickConfigurerData;
 import io.kodokojo.brickmanager.BrickStartContext;
 import io.kodokojo.brickmanager.service.BrickManager;
 import io.kodokojo.brickmanager.service.actor.EndpointActor;
@@ -54,20 +56,28 @@ public class BrickConfigurationStarterActor extends AbstractActor {
 
     private final LoggingAdapter LOGGER = getLogger(getContext().system(), this);
 
-    public static Props PROPS(BrickManager brickManager, BrickUrlFactory brickUrlFactory) {
-        return Props.create(BrickConfigurationStarterActor.class, brickManager, brickUrlFactory);
+    public static Props PROPS(BrickManager brickManager, BrickUrlFactory brickUrlFactory, EventBus eventBus, EventBuilderFactory eventBuilderFactory) {
+        requireNonNull(brickManager, "brickManager must be defined.");
+        requireNonNull(brickUrlFactory, "brickUrlFactory must be defined.");
+        requireNonNull(eventBus, "eventBus must be defined.");
+        requireNonNull(eventBuilderFactory, "eventBuilderFactory must be defined.");
+        return Props.create(BrickConfigurationStarterActor.class, brickManager, brickUrlFactory, eventBus, eventBuilderFactory);
     }
 
     private final BrickManager brickManager;
 
     private final BrickUrlFactory brickUrlFactory;
 
+    private final EventBus eventBus;
+
+    private final EventBuilderFactory eventBuilderFactory;
+
     @Inject
-    public BrickConfigurationStarterActor(BrickManager brickManager, BrickUrlFactory brickUrlFactory) {
-        requireNonNull(brickManager, "brickManager must be defined.");
-        requireNonNull(brickUrlFactory, "brickUrlFactory must be defined.");
+    public BrickConfigurationStarterActor(BrickManager brickManager, BrickUrlFactory brickUrlFactory, EventBus eventBus, EventBuilderFactory eventBuilderFactory) {
         this.brickManager = brickManager;
         this.brickUrlFactory = brickUrlFactory;
+        this.eventBus = eventBus;
+        this.eventBuilderFactory = eventBuilderFactory;
 
         receive(
                 ReceiveBuilder
@@ -120,8 +130,14 @@ public class BrickConfigurationStarterActor extends AbstractActor {
                 });
 
                 brickConfigurerData = brickConfigurerDataTry.get();
-                if (brickConfigurerData != null) {
-                //  TODO UPDATE BrickConfiguration properties in DB
+                if (brickConfigurerDataTry.isSuccess()) {
+                    EventBuilder eventBuilder = eventBuilderFactory.create();
+                    eventBuilder.setEventType(Event.BRICK_PROPERTY_UPDATE_REQUEST);
+                    eventBuilder.setPayload(brickConfigurerData);
+                    eventBus.send(eventBuilder.build());
+                    BrickStateEvent brickStateEvent = new BrickStateEvent(projectConfiguration.getIdentifier(), brickStartContext.getStackConfiguration().getName(), brickType.name(), brickStartContext.getBrickConfiguration().getName(), null, BrickStateEvent.State.RUNNING, url, "", brickConfiguration.getVersion());
+                    sender.tell(brickStateEvent, self());
+
                     /*
                     Future<Object> future = Patterns.ask(getContext().actorFor(EndpointActor.ACTOR_PATH), new BrickPropertyToBrickConfigurationActor.BrickPropertyToBrickConfigurationMsg(projectConfiguration.getIdentifier(), stackConfiguration.getName(), brickConfiguration.getName(), brickConfigurerData.getContext()), Timeout.apply(10, TimeUnit.SECONDS));
                     try {

@@ -19,7 +19,7 @@ package io.kodokojo.brickmanager.service;
 
 import io.kodokojo.brickmanager.BrickAlreadyExist;
 import io.kodokojo.brickmanager.BrickConfigurer;
-import io.kodokojo.brickmanager.BrickConfigurerData;
+import io.kodokojo.commons.model.BrickConfigurerData;
 import io.kodokojo.brickmanager.BrickConfigurerProvider;
 import io.kodokojo.commons.model.*;
 import io.kodokojo.commons.service.ProjectConfigurationException;

@@ -22,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.kodokojo.brickmanager.*;
+import io.kodokojo.commons.model.BrickConfigurerData;
 import io.kodokojo.commons.model.ProjectConfiguration;
 import io.kodokojo.commons.model.UpdateData;
 import io.kodokojo.commons.model.User;

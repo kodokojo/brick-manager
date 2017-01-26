@@ -19,7 +19,7 @@ package io.kodokojo.brickmanager.brick.jenkins;
 
 
 import io.kodokojo.brickmanager.BrickConfigurer;
-import io.kodokojo.brickmanager.BrickConfigurerData;
+import io.kodokojo.commons.model.BrickConfigurerData;
 import io.kodokojo.commons.model.ProjectConfiguration;
 import io.kodokojo.commons.model.UpdateData;
 import io.kodokojo.commons.model.User;
