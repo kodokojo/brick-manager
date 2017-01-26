@@ -100,7 +100,15 @@ public class BrickConfigurerWhen<SELF extends BrickConfigurerWhen<?>> extends St
         stackConfigurations.add(Mockito.mock(StackConfiguration.class));
         ProjectConfiguration fakeProjectConfiguration = new ProjectConfiguration("1234", "acme", userService, admins, stackConfigurations, new ArrayList<>());
 
-        BrickConfigurerData configurationData = new BrickConfigurerData("Acme", "build-A", brickUrl, "kodokojo.dev", users, users);
+        BrickConfigurerData configurationData = new BrickConfigurerData("Acme",
+                "1234",
+                "acme",
+                "build-A",
+                brickUrl,
+                "kodokojo.dev",
+                users,
+                users
+        );
         configurationData.addInContext(GitlabConfigurer.GITLAB_FORCE_ENTRYPOINT_KEY, Boolean.TRUE); //Specific config for Gitlab.
         try {
             configurationData = brickConfigurer.configure(fakeProjectConfiguration, configurationData);
