@@ -1,17 +1,17 @@
 /**
  * Kodo Kojo - API frontend which dispatch REST event to Http services or publish event on EvetnBus.
  * Copyright © 2016 Kodo Kojo (infos@kodokojo.io)
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -22,7 +22,8 @@ import com.tngtech.jgiven.annotation.Hidden;
 import com.tngtech.jgiven.annotation.ProvidedScenarioState;
 import com.tngtech.jgiven.annotation.Quoted;
 import io.kodokojo.bdd.stage.brickauthenticator.UserAuthenticator;
-import io.kodokojo.brickmanager.*;
+import io.kodokojo.brickmanager.BrickConfigurerProvider;
+import io.kodokojo.brickmanager.DefaultBrickConfigurerProvider;
 import io.kodokojo.commons.docker.model.ImageName;
 import io.kodokojo.commons.docker.model.StringToImageNameConverter;
 import io.kodokojo.commons.service.BrickFactory;
@@ -78,7 +79,7 @@ public class BrickConfigurerGiven<SELF extends BrickConfigurerGiven<?>> extends 
 
         ImageName imageName = StringToImageNameConverter.convert(image);
 
-        Try<DockerService> dockerServices = startDockerService(dockerTestSupport, brickName, imageName.getName(), imageName.getTag(), port, new HttpServiceChecker(port, timeout * 1000, "/"));
+        Try<DockerService> dockerServices = startDockerService(dockerTestSupport, brickName, imageName.getShortNameWithoutTag(), imageName.getTag(), port, new HttpServiceChecker(port, timeout * 1000, "/"));
         DockerService service = dockerServices.getOrElseThrow(() -> {
             return new RuntimeException("Unable to start " + brickName);
         });

@@ -24,16 +24,19 @@ import com.tngtech.jgiven.junit.ScenarioTest;
 import io.kodokojo.bdd.stage.BrickConfigurerGiven;
 import io.kodokojo.bdd.stage.BrickConfigurerThen;
 import io.kodokojo.bdd.stage.BrickConfigurerWhen;
+import io.kodokojo.bdd.stage.brickauthenticator.GitlabUserAuthenticator;
 import io.kodokojo.bdd.stage.brickauthenticator.JenkinsUserAuthenticator;
 import io.kodokojo.bdd.stage.brickauthenticator.UserAuthenticator;
 import io.kodokojo.test.DockerIsRequire;
 import io.kodokojo.test.DockerPresentMethodRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 
 @RunWith(DataProviderRunner.class)
+@Ignore
 public class BrickConfigurationConfigurerIntTest extends ScenarioTest<BrickConfigurerGiven<?>, BrickConfigurerWhen<?>, BrickConfigurerThen<?>> {
 
     @Rule
@@ -43,7 +46,8 @@ public class BrickConfigurationConfigurerIntTest extends ScenarioTest<BrickConfi
     public static Object[][] brickData() {
         return new Object[][]{
 
-                //{"Gitlab", "gitlab/gitlab-ce:8.13.0-ce.0", 80, 180, new GitlabUserAuthenticator()}//,
+                //{"Gitlab", "gitlab/gitlab-ce:8.16.2-ce.0", 80, 180, new GitlabUserAuthenticator()}
+                // ,
                 {"Jenkins", "jenkins:1.651.3-alpine", 8080, 120, new JenkinsUserAuthenticator()}
 
         };

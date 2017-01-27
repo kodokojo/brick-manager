@@ -68,7 +68,7 @@ public class GitlabConfigurer implements BrickConfigurer, BrickConfigurerHelper 
 
     private static final Pattern URL_RESET_TOKEN_PATTERN = Pattern.compile("reset_password_token=(.*)$");
 
-    private static final Pattern PRIVATE_TOKEN_PATTERN = Pattern.compile(".*<input type=\"text\" name=\"token\" id=\"token\" value=\"([^\"]*)\" class=\"form-control\" />.*");
+    private static final Pattern PRIVATE_TOKEN_PATTERN = Pattern.compile(".*id=\"private-token\" value=\"([^\"]*)\".*");
 
     private static final String SIGNIN_URL = "/users/sign_in";
 
@@ -81,7 +81,9 @@ public class GitlabConfigurer implements BrickConfigurer, BrickConfigurerHelper 
     private static final String GITLAB_CHANGE_FAIL_MESSAGE = "After a successful password update you will be redirected to login screen.";
 
     private static final String KODO_KOJO_SSH_KEY = "Kodo Kojo SSH Key";
+
     public static final String PRIVATE_TOKEN = "PRIVATE-TOKEN";
+
     public static final String API_V3_USERS = "/api/v3/users/";
 
     private final BrickUrlFactory brickUrlFactory;
