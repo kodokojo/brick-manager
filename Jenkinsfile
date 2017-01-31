@@ -57,7 +57,7 @@ def buildAndPushDocker() {
         def version = version()
         def commit = commitSha1()
         def tag = (env.BRANCH_NAME == "staging" ? "staging" : "dev")
-        def imageName = "kodokojo/brick:${tag}"
+        def imageName = "kodokojo/brick-manager:${tag}"
 
         try {
 
