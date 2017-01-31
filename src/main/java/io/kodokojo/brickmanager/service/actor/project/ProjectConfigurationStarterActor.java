@@ -76,7 +76,12 @@ public class ProjectConfigurationStarterActor extends AbstractActor {
         } else {
             LOGGER.error("Project {} failed to start.", msg.getProjectConfiguration().getName());
         }
-        originalSender.tell(new ProjectConfigurationStartResultMsg(initialMsg.getRequester(), initialMsg.originalEvent(), projectResult.getProject().getIdentifier()), self());
+        ProjectConfigurationStartResultMsg projectConfigurationStartResultMsg = new ProjectConfigurationStartResultMsg(
+                initialMsg.getRequester(),
+                initialMsg.originalEvent(),
+                projectResult.getProject().getIdentifier()
+        );
+        originalSender.tell(projectConfigurationStartResultMsg, self());
         getContext().stop(self());
     }
 
@@ -91,7 +96,8 @@ public class ProjectConfigurationStarterActor extends AbstractActor {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Request a stack start for project {}.", projectConfiguration.getName());
         }
-        getContext().actorFor(EndpointActor.ACTOR_PATH).tell(new StackConfigurationStarterActor.StackConfigurationStartMsg(projectConfiguration, defaultStackConfiguration), ActorRef.noSender());
+        StackConfigurationStarterActor.StackConfigurationStartMsg stackConfigurationStartMsg = new StackConfigurationStarterActor.StackConfigurationStartMsg(projectConfiguration, defaultStackConfiguration);
+        getContext().actorFor(EndpointActor.ACTOR_PATH).tell(stackConfigurationStartMsg, ActorRef.noSender());
     }
 
     private void onRightUserReply(RightEndpointActor.RightRequestResultMsg msg) {

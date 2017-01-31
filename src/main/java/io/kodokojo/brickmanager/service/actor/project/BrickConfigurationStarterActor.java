@@ -89,7 +89,7 @@ public class BrickConfigurationStarterActor extends AbstractActor {
     }
 
     protected final void start(BrickStartContext brickStartContext) {
-        ActorRef sender = sender();
+        //ActorRef sender = sender();
         ProjectConfiguration projectConfiguration = brickStartContext.getProjectConfiguration();
         StackConfiguration stackConfiguration = brickStartContext.getStackConfiguration();
         BrickConfiguration brickConfiguration = brickStartContext.getBrickConfiguration();
@@ -110,7 +110,7 @@ public class BrickConfigurationStarterActor extends AbstractActor {
                     BrickAlreadyExist brickAlreadyExist = (BrickAlreadyExist) throwable;
                     LOGGER.error("BrickConfiguration {} already exist for project {}, not reconfigure it.", brickAlreadyExist.getBrickName(), brickAlreadyExist.getProjectName());
                     generateMsgAndSend(brickStartContext, httpsUrl, null, BrickStateEvent.State.ALREADYEXIST);
-                    sender.tell(Futures.failed(brickAlreadyExist), self());
+                  //  sender.tell(Futures.failed(brickAlreadyExist), self());
                 }
             });
 
@@ -135,8 +135,10 @@ public class BrickConfigurationStarterActor extends AbstractActor {
                     eventBuilder.setEventType(Event.BRICK_PROPERTY_UPDATE_REQUEST);
                     eventBuilder.setPayload(brickConfigurerData);
                     eventBus.send(eventBuilder.build());
-                    BrickStateEvent brickStateEvent = new BrickStateEvent(projectConfiguration.getIdentifier(), brickStartContext.getStackConfiguration().getName(), brickType.name(), brickStartContext.getBrickConfiguration().getName(), null, BrickStateEvent.State.RUNNING, url, "", brickConfiguration.getVersion());
-                    sender.tell(brickStateEvent, self());
+                   // BrickStateEvent brickStateEvent = new BrickStateEvent(projectConfiguration.getIdentifier(), brickStartContext.getStackConfiguration().getName(), brickType.name(), brickStartContext.getBrickConfiguration().getName(), null, BrickStateEvent.State.RUNNING, url, "", brickConfiguration.getVersion());
+                    generateMsgAndSend(brickStartContext, url, BrickStateEvent.State.CONFIGURING, BrickStateEvent.State.RUNNING);
+
+                    //sender.tell(brickStateEvent, self());
 
                     /*
                     Future<Object> future = Patterns.ask(getContext().actorFor(EndpointActor.ACTOR_PATH), new BrickPropertyToBrickConfigurationActor.BrickPropertyToBrickConfigurationMsg(projectConfiguration.getIdentifier(), stackConfiguration.getName(), brickConfiguration.getName(), brickConfigurerData.getContext()), Timeout.apply(10, TimeUnit.SECONDS));
@@ -162,7 +164,7 @@ public class BrickConfigurationStarterActor extends AbstractActor {
         } catch (RuntimeException e) {
             LOGGER.error("An error occurred while trying to start brick {} for project {}: {}", brickType, projectName, e);
             generateMsgAndSend(brickStartContext, httpsUrl, null, BrickStateEvent.State.ONFAILURE, e.getMessage());
-            sender.tell(Futures.failed(e), self());
+            //sender.tell(Futures.failed(e), self());
         }
         getContext().stop(self());
 

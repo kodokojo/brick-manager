@@ -98,11 +98,14 @@ public class StackConfigurationStarterActor extends AbstractActor {
                             LOGGER.debug("Add following DNS Entry {}", dnsEntry);
                         }
                         return dnsEntry;
-                    }).collect(Collectors.toSet()));
+                    }).collect(Collectors.toSet())
+            );
         });
         dnsManager.createOrUpdateDnsEntries(dnsentries);
+        getContext().stop(self());
     }
 
+    // TODO Remove
     private void onBrickStateChanged(BrickStateEvent msg) {
         /*
         if (msg.getState() == BrickStateEvent.State.RUNNING ||

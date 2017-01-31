@@ -110,10 +110,17 @@ public class BrickUpdateUserActor extends AbstractActor {
             }
             return null;
         }, getContext().dispatcher());
-        Try.of(() -> Await.result(futureUpdate, Duration.create(1, TimeUnit.MINUTES))).onFailure(throwable -> {
+
+        Try.of(
+                () -> Await.result(futureUpdate, Duration.create(1, TimeUnit.MINUTES))
+        ).onFailure(throwable -> {
             LOGGER.error("Unable to update user for brick '{}' on project '{}': {}", msg.brickConfiguration.getName(), msg.projectConfiguration.getName(), throwable);
-            sender().tell(new BrickUpdateUserResultMsg(msg, false), self());
-        }).onSuccess(o -> sender().tell(new BrickUpdateUserResultMsg(msg, true), self()));
+            BrickUpdateUserResultMsg brickUpdateUserResultMsg = new BrickUpdateUserResultMsg(msg, false);
+            sender().tell(brickUpdateUserResultMsg, self());
+        }).onSuccess(o -> {
+            BrickUpdateUserResultMsg brickUpdateUserResultMsg = new BrickUpdateUserResultMsg(msg, true);
+            sender().tell(brickUpdateUserResultMsg, self());
+        });
 
         getContext().stop(self());
     }
