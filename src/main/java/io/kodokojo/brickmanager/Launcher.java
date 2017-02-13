@@ -42,6 +42,7 @@ import java.util.Set;
 public class Launcher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
+
     public static final String MOCK = "mock";
 
     public static void main(String[] args) {
