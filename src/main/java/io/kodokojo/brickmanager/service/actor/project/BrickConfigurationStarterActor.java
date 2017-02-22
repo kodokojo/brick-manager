@@ -135,25 +135,9 @@ public class BrickConfigurationStarterActor extends AbstractActor {
                     eventBuilder.setEventType(Event.BRICK_PROPERTY_UPDATE_REQUEST);
                     eventBuilder.setPayload(brickConfigurerData);
                     eventBus.send(eventBuilder.build());
-                   // BrickStateEvent brickStateEvent = new BrickStateEvent(projectConfiguration.getIdentifier(), brickStartContext.getStackConfiguration().getName(), brickType.name(), brickStartContext.getBrickConfiguration().getName(), null, BrickStateEvent.State.RUNNING, url, "", brickConfiguration.getVersion());
+
                     generateMsgAndSend(brickStartContext, url, BrickStateEvent.State.CONFIGURING, BrickStateEvent.State.RUNNING);
 
-                    //sender.tell(brickStateEvent, self());
-
-                    /*
-                    Future<Object> future = Patterns.ask(getContext().actorFor(EndpointActor.ACTOR_PATH), new BrickPropertyToBrickConfigurationActor.BrickPropertyToBrickConfigurationMsg(projectConfiguration.getIdentifier(), stackConfiguration.getName(), brickConfiguration.getName(), brickConfigurerData.getContext()), Timeout.apply(10, TimeUnit.SECONDS));
-                    try {
-                        Await.result(future, Duration.apply(10, TimeUnit.SECONDS));
-                        generateMsgAndSend(brickStartContext, httpsUrl, BrickStateEvent.State.CONFIGURING, BrickStateEvent.State.RUNNING);
-                        BrickStateEvent brickStateEvent = new BrickStateEvent(projectConfiguration.getIdentifier(), brickStartContext.getStackConfiguration().getName(), brickType.name(), brickStartContext.getBrickConfiguration().getName(), null, BrickStateEvent.State.RUNNING, url, "", brickConfiguration.getVersion());
-                        sender.tell(brickStateEvent, self());
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("{} for project {} configured", brickType, projectName);
-                        }
-                    } catch (Exception e) {
-                        LOGGER.error("Unable to update projectConfiguration {}: {}", projectConfiguration, e);
-                    }
-                    */
                 }
             } else {
                 generateMsgAndSend(brickStartContext, httpsUrl, null, BrickStateEvent.State.UNKNOWN, "We are not able to determinate the brick state from brick manager.");
@@ -164,7 +148,6 @@ public class BrickConfigurationStarterActor extends AbstractActor {
         } catch (RuntimeException e) {
             LOGGER.error("An error occurred while trying to start brick {} for project {}: {}", brickType, projectName, e);
             generateMsgAndSend(brickStartContext, httpsUrl, null, BrickStateEvent.State.ONFAILURE, e.getMessage());
-            //sender.tell(Futures.failed(e), self());
         }
         getContext().stop(self());
 

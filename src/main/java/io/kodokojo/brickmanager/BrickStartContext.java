@@ -31,7 +31,6 @@ public class BrickStartContext implements Serializable {
 
     private final BrickConfiguration brickConfiguration;
 
-
     public BrickStartContext(ProjectConfiguration projectConfiguration, StackConfiguration stackConfiguration, BrickConfiguration brickConfiguration) {
         if (projectConfiguration == null) {
             throw new IllegalArgumentException("projectConfiguration must be defined.");
@@ -58,7 +57,6 @@ public class BrickStartContext implements Serializable {
     public BrickConfiguration getBrickConfiguration() {
         return brickConfiguration;
     }
-
 
     @Override
     public String toString() {
