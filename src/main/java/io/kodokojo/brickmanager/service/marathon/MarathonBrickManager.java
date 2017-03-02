@@ -182,7 +182,7 @@ public class MarathonBrickManager implements BrickManager {
                                 brickName,
                                 entrypoint,
                                 domain,
-                                IteratorUtils.toList(projectConfiguration.getAdmins()),
+                                IteratorUtils.toList(projectConfiguration.getTeamLeaders()),
                                 users
                         );
                         brickConfigurerData = configurer.configure(projectConfiguration, brickConfigurerData);

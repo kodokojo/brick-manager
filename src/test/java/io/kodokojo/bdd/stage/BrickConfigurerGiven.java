@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 public class BrickConfigurerGiven<SELF extends BrickConfigurerGiven<?>> extends Stage<SELF> implements DockerTestApplicationBuilder {
 
-
     @ProvidedScenarioState
     public DockerTestSupport dockerTestSupport;
 
@@ -67,6 +66,10 @@ public class BrickConfigurerGiven<SELF extends BrickConfigurerGiven<?>> extends 
     HttpUserSupport httpUserSupport;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrickConfigurerGiven.class);
+
+    public BrickConfigurerGiven() {
+        super();
+    }
 
     public SELF $_is_started(@Hidden DockerTestSupport dockerTestSupport, @Quoted String brickName, @Hidden String image, @Hidden int port, @Hidden int timeout, @Hidden UserAuthenticator userAuthenticator) {
         if (this.dockerTestSupport != null) {

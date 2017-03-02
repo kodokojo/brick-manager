@@ -50,10 +50,6 @@ import io.kodokojo.commons.service.repository.ProjectFetcher;
 import io.kodokojo.commons.service.repository.UserFetcher;
 import javaslang.control.Try;
 
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import static akka.event.Logging.getLogger;
 import static java.util.Objects.requireNonNull;
 
@@ -138,12 +134,9 @@ public class EndpointActor extends AbstractEventEndpointActor {
                     EventBuilder eventBuilder = eventBuilderFactory.create();
                     eventBuilder.setEventType(Event.BRICK_STATE_UPDATE);
 
-                    BrickStateEvent.State newState = msg.getState();
-                    BrickStateEvent.State oldState = msg.getOldState();
-
                     eventBuilder
                             .addCustomHeader(Event.PROJECTCONFIGURATION_ID_CUSTOM_HEADER, msg.getProjectConfigurationIdentifier())
-                            .setPayload(new BrickStateChanged(msg.getProjectConfigurationIdentifier(), msg.getStackName(), msg.getBrickName(), newState.toString(), oldState == null ? null : oldState.name()));
+                            .setPayload(msg);
                     eventBus.send(eventBuilder.build());
 
 
@@ -193,7 +186,7 @@ public class EndpointActor extends AbstractEventEndpointActor {
             eventBuilder.copyCustomHeader(msg.originalEvent(), Event.REQUESTER_ID_CUSTOM_HEADER);
             User requester = projectConfigurationStartResultMsg.getRequester();
             if (requester != null) {
-                eventBuilder.addCustomHeader(Event.ENTITY_ID_CUSTOM_HEADER, requester.getEntityIdentifier());
+                eventBuilder.addCustomHeader(Event.ORGANISATION_ID_CUSTOM_HEADER, requester.getOrganisationIds().iterator().next());
             }
             String projectId = projectConfigurationStartResultMsg.getProjectId();
             eventBuilder.setJsonPayload(projectId);

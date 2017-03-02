@@ -91,7 +91,7 @@ public class BrickUpdateUserActor extends AbstractActor {
                 url,
                 applicationConfig.domain(),
                 IteratorUtils.toList(msg.projectConfiguration.getUsers()),
-                IteratorUtils.toList(msg.projectConfiguration.getAdmins()));
+                IteratorUtils.toList(msg.projectConfiguration.getTeamLeaders()));
         brickConfigurationData.getContext().putAll(msg.brickConfiguration.getProperties());
         LOGGER.debug("brickConfigurationData context: {}", brickConfigurationData.getContext());
 

@@ -25,7 +25,6 @@ import com.google.inject.name.Names;
 import io.kodokojo.brickmanager.config.module.*;
 import io.kodokojo.brickmanager.service.BrickManager;
 import io.kodokojo.brickmanager.service.actor.EndpointActor;
-import io.kodokojo.commons.config.ApplicationConfig;
 import io.kodokojo.commons.config.MicroServiceConfig;
 import io.kodokojo.commons.config.module.*;
 import io.kodokojo.commons.event.EventBus;
@@ -85,7 +84,7 @@ public class Launcher {
                                 throw new ProjectConfigurationException("Failing name pattern.");
                             }
                             String domaine = projectConfiguration.getName() + "-" + stackConfiguration.getName() + ".kodokojo.dev";
-                            return new BrickConfigurerData(projectConfiguration.getName(), projectConfiguration.getIdentifier(), stackConfiguration.getName(), brickConfiguration.getName(), "http://" + domaine, domaine, IteratorUtils.toList(projectConfiguration.getAdmins()), IteratorUtils.toList(projectConfiguration.getUsers()));
+                            return new BrickConfigurerData(projectConfiguration.getName(), projectConfiguration.getIdentifier(), stackConfiguration.getName(), brickConfiguration.getName(), "http://" + domaine, domaine, IteratorUtils.toList(projectConfiguration.getTeamLeaders()), IteratorUtils.toList(projectConfiguration.getUsers()));
                         }
 
                         @Override
