@@ -1,0 +1,9 @@
+{
+  "build": {
+    "type": "maven",
+    "goal": "-Dmaven.test.skip=true package"
+  },
+  "deploy": {
+    "jarName": "target/brick-manager-1.0-SNAPSHOT-runnable.jar"
+  }
+}

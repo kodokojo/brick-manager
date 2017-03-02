@@ -36,6 +36,7 @@ import org.junit.runner.RunWith;
 
 
 @RunWith(DataProviderRunner.class)
+@Ignore
 public class BrickConfigurationConfigurerIntTest extends ScenarioTest<BrickConfigurerGiven<?>, BrickConfigurerWhen<?>, BrickConfigurerThen<?>> {
 
     @Rule

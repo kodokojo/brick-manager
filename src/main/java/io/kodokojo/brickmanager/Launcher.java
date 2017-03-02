@@ -25,10 +25,12 @@ import com.google.inject.name.Names;
 import io.kodokojo.brickmanager.config.module.*;
 import io.kodokojo.brickmanager.service.BrickManager;
 import io.kodokojo.brickmanager.service.actor.EndpointActor;
+import io.kodokojo.commons.config.ApplicationConfig;
 import io.kodokojo.commons.config.MicroServiceConfig;
 import io.kodokojo.commons.config.module.*;
 import io.kodokojo.commons.event.EventBus;
 import io.kodokojo.commons.model.*;
+import io.kodokojo.commons.service.healthcheck.HttpHealthCheckEndpoint;
 import io.kodokojo.commons.service.ProjectConfigurationException;
 import io.kodokojo.commons.service.actor.EventToEndpointGateway;
 import io.kodokojo.commons.service.lifecycle.ApplicationLifeCycleManager;
@@ -51,7 +53,7 @@ public class Launcher {
         Injector propertyInjector = Guice.createInjector(new CommonsPropertyModule(args), new PropertyModule());
         MicroServiceConfig microServiceConfig = propertyInjector.getInstance(MicroServiceConfig.class);
         LOGGER.info("Starting Kodo Kojo {}.", microServiceConfig.name());
-        Injector servicesInjector = propertyInjector.createChildInjector(new UtilityServiceModule(), new EventBusModule(), new DatabaseModule(), new SecurityModule(), new ServiceModule());
+        Injector servicesInjector = propertyInjector.createChildInjector(new UtilityServiceModule(), new EventBusModule(), new DatabaseModule(), new SecurityModule(), new ServiceModule(), new CommonsHealthCheckModule());
         Module orchestratorModule = new MarathonModule();
         OrchestratorConfig orchestratorConfig = propertyInjector.getInstance(OrchestratorConfig.class);
         if (MOCK.equals(orchestratorConfig.orchestrator())) {
@@ -134,6 +136,9 @@ public class Launcher {
             }
         });
         eventBus.connect();
+
+        HttpHealthCheckEndpoint httpHealthCheckEndpoint = injector.getInstance(HttpHealthCheckEndpoint.class);
+        httpHealthCheckEndpoint.start();
 
         LOGGER.info("Kodo Kojo {} started.", microServiceConfig.name());
 

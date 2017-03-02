@@ -49,6 +49,12 @@
             <artifactId>kodokojo</artifactId>
             <version>1.2.0-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>3.4.1</version>
+        </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
@@ -211,6 +217,7 @@
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.54</version>
         </dependency>
+
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -554,20 +561,20 @@
         </repository>
         <repository>
             <id>nexus.kodokojo.io</id>
-            <url>https://nexus.kodokojo.io</url>
+            <url>https://nexus.kodokojo.io/repository/maven-public/</url>
         </repository>
     </repositories>
     <distributionManagement>
         <repository>
             <id>kodokojo-snapshots</id>
             <name>kodokojo-snapshots</name>
-            <url>https://nexus.kodokojo.io/content/repositories/snapshots/</url>
+            <url>https://nexus.kodokojo.io/repository/maven-snapshots/</url>
         </repository>
 
         <snapshotRepository>
             <id>kodokojo-releases</id>
             <name>kodokojo-releases</name>
-            <url>https://nexus.kodokojo.io/content/repositories/snapshots/</url>
+            <url>https://nexus.kodokojo.io/repository/maven-releases/</url>
         </snapshotRepository>
     </distributionManagement>
     <licenses>
