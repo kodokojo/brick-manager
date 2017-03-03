@@ -30,7 +30,7 @@
         },
         {
           "key": "label",
-          "value": "endpoint=$projectConfigurationId"
+          "value": "endpoint=$projectName"
         },
         {
           "key": "label",
@@ -46,14 +46,14 @@
         },
         {
           "key": "log-opt",
-          "value": "tag=jenkins-$projectConfigurationId"
+          "value": "tag=jenkins-$projectName"
         }
       ]
     },
     "volumes": [
       {
         "containerPath": "/var/jenkins_home/",
-        "hostPath": "/kodokojo/env/$projectConfigurationId/jenkins/",
+        "hostPath": "/kodokojo/env/$projectName/jenkins/",
         "mode": "RW"
       }
     ]
@@ -76,7 +76,7 @@
     }
   ],
   "labels": {
-    "endpoint": "$projectConfigurationId",
+    "endpoint": "$projectName",
     "managedByKodoKojoHa": "true",
     "componentType": "ci",
     "component": "jenkins"

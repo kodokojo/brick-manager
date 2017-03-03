@@ -36,7 +36,7 @@
         },
         {
           "key": "label",
-          "value": "project=$projectConfigurationId"
+          "value": "project=$projectName"
         },
         {
           "key": "label",
@@ -52,14 +52,14 @@
         },
         {
           "key": "log-opt",
-          "value": "tag=gitlab-$projectConfigurationId"
+          "value": "tag=gitlab-$projectName"
         }
       ]
     },
     "volumes": [
       {
         "containerPath": "/var/opt/gitlab",
-        "hostPath": "/kodokojo/env/$projectConfigurationId/gitlab/",
+        "hostPath": "/kodokojo/env/$projectName/gitlab/",
         "mode": "RW"
       }
     ]
@@ -82,7 +82,7 @@
     }
   ],
   "labels": {
-    "endpoint": "$projectConfigurationId",
+    "endpoint": "$projectName",
     "managedByKodoKojoHa": "true",
     "componentType": "scm",
     "component": "gitlab"

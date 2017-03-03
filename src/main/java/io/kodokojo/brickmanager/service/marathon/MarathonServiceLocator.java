@@ -77,14 +77,14 @@ public class MarathonServiceLocator implements ServiceLocator {
         Set<Service> res = new HashSet<>();
         Set<String> appIds = new HashSet<>();
         if(LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Trying to locate service {} from marathon {}.", projectName, marathonConfig.url());
+            LOGGER.debug("Trying to locate service {} from marathon {}.", projectName, marathonConfig.url() + "/v2/apps");
         }
         Call<JsonObject> allApplicationsCall = marathonServiceLocatorRestApi.getAllApplications();
         try {
             Response<JsonObject> response = allApplicationsCall.execute();
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Response from marathon request is: {}", response.toString());
+                LOGGER.debug("Response from marathon request is: {}", response.body());
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String jsonBody = gson.toJson(response.body());
                 LOGGER.trace("Body response:\n", jsonBody);
