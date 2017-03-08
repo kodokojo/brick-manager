@@ -83,12 +83,6 @@ public class MarathonServiceLocator implements ServiceLocator {
         try {
             Response<JsonObject> response = allApplicationsCall.execute();
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Response from marathon request is: {}", response.body());
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                String jsonBody = gson.toJson(response.body());
-                LOGGER.trace("Body response:\n", jsonBody);
-            }
             JsonArray apps = response.body().getAsJsonArray("apps");
             for (int i = 0; i < apps.size(); i++) {
                 JsonObject app = (JsonObject) apps.get(i);

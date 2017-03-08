@@ -104,7 +104,7 @@ public class BrickConfigurationStarterActor extends AbstractActor {
 
             Future<Set<Service>> futureStart = Futures.future(() -> brickManager.start(projectConfiguration, stackConfiguration, brickConfiguration), getContext().dispatcher());
 
-            Try<Set<Service>> servicesTry = Try.of(() -> Await.result(futureStart, Duration.create(5, TimeUnit.MINUTES))).onFailure(throwable -> {
+            Try<Set<Service>> servicesTry = Try.of(() -> Await.result(futureStart, Duration.create(15, TimeUnit.MINUTES))).onFailure(throwable -> {
                 LOGGER.error("Unable to start brick '{}' for project '{}': {}", brickConfiguration.getName(), projectName, throwable);
                 if (throwable instanceof BrickAlreadyExist) {
                     BrickAlreadyExist brickAlreadyExist = (BrickAlreadyExist) throwable;

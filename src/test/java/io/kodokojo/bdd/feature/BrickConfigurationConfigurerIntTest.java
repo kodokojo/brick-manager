@@ -1,17 +1,17 @@
 /**
  * Kodo Kojo - API frontend which dispatch REST event to Http services or publish event on EvetnBus.
  * Copyright © 2016 Kodo Kojo (infos@kodokojo.io)
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,7 +25,6 @@ import io.kodokojo.bdd.stage.BrickConfigurerGiven;
 import io.kodokojo.bdd.stage.BrickConfigurerThen;
 import io.kodokojo.bdd.stage.BrickConfigurerWhen;
 import io.kodokojo.bdd.stage.brickauthenticator.GitlabUserAuthenticator;
-import io.kodokojo.bdd.stage.brickauthenticator.JenkinsUserAuthenticator;
 import io.kodokojo.bdd.stage.brickauthenticator.UserAuthenticator;
 import io.kodokojo.test.DockerIsRequire;
 import io.kodokojo.test.DockerPresentMethodRule;
@@ -46,9 +45,9 @@ public class BrickConfigurationConfigurerIntTest extends ScenarioTest<BrickConfi
     public static Object[][] brickData() {
         return new Object[][]{
 
-                //{"Gitlab", "gitlab/gitlab-ce:8.16.2-ce.0", 80, 180, new GitlabUserAuthenticator()}
+                {"Gitlab", "gitlab/gitlab-ce:8.17.2-ce.0", 80, 180, new GitlabUserAuthenticator()}
                 // ,
-                {"Jenkins", "jenkins:1.651.3-alpine", 8080, 120, new JenkinsUserAuthenticator()}
+                //{"Jenkins", "jenkins:1.651.3-alpine", 8080, 120, new JenkinsUserAuthenticator()}
 
         };
     }
