@@ -1,37 +1,35 @@
 /**
  * Kodo Kojo - API frontend which dispatch REST event to Http services or publish event on EvetnBus.
  * Copyright © 2016 Kodo Kojo (infos@kodokojo.io)
- *
+ * <p>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package io.kodokojo.brickmanager.service.actor.project;
 
 import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.dispatch.Futures;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
 import io.kodokojo.brickmanager.BrickAlreadyExist;
+import io.kodokojo.brickmanager.BrickStartContext;
+import io.kodokojo.brickmanager.service.BrickManager;
+import io.kodokojo.brickmanager.service.actor.EndpointActor;
 import io.kodokojo.commons.event.Event;
 import io.kodokojo.commons.event.EventBuilder;
 import io.kodokojo.commons.event.EventBuilderFactory;
 import io.kodokojo.commons.event.EventBus;
-import io.kodokojo.commons.model.BrickConfigurerData;
-import io.kodokojo.brickmanager.BrickStartContext;
-import io.kodokojo.brickmanager.service.BrickManager;
-import io.kodokojo.brickmanager.service.actor.EndpointActor;
 import io.kodokojo.commons.model.*;
 import io.kodokojo.commons.service.BrickUrlFactory;
 import io.kodokojo.commons.service.actor.message.BrickStateEvent;
@@ -43,7 +41,6 @@ import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import javax.inject.Inject;
-
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -83,7 +80,7 @@ public class BrickConfigurationStarterActor extends AbstractActor {
                 ReceiveBuilder
                         .match(BrickStartContext.class, this::start)
                         .matchAny(this::unhandled)
-                .build()
+                        .build()
         );
 
     }
@@ -95,9 +92,8 @@ public class BrickConfigurationStarterActor extends AbstractActor {
         BrickConfiguration brickConfiguration = brickStartContext.getBrickConfiguration();
         BrickType brickType = brickConfiguration.getType();
         String projectName = projectConfiguration.getName();
-        String url = brickUrlFactory.forgeUrl(projectConfiguration,projectConfiguration.getDefaultStackConfiguration().getName(), brickConfiguration);
+        String url = brickUrlFactory.forgeUrl(projectConfiguration, projectConfiguration.getDefaultStackConfiguration().getName(), brickConfiguration);
         String httpsUrl = "https://" + url;
-
 
         try {
             generateMsgAndSend(brickStartContext, httpsUrl, null, BrickStateEvent.State.STARTING);
@@ -110,7 +106,7 @@ public class BrickConfigurationStarterActor extends AbstractActor {
                     BrickAlreadyExist brickAlreadyExist = (BrickAlreadyExist) throwable;
                     LOGGER.error("BrickConfiguration {} already exist for project {}, not reconfigure it.", brickAlreadyExist.getBrickName(), brickAlreadyExist.getProjectName());
                     generateMsgAndSend(brickStartContext, httpsUrl, null, BrickStateEvent.State.ALREADYEXIST);
-                  //  sender.tell(Futures.failed(brickAlreadyExist), self());
+                    //  sender.tell(Futures.failed(brickAlreadyExist), self());
                 }
             });
 
@@ -159,11 +155,11 @@ public class BrickConfigurationStarterActor extends AbstractActor {
         BrickConfiguration brickConfiguration = context.getBrickConfiguration();
         BrickType brickType = brickConfiguration.getType();
         String brickName = brickConfiguration.getName();
-        BrickStateEvent message = new BrickStateEvent(projectConfiguration.getIdentifier(),stackConfiguration.getName(),  brickType.name(), brickName, oldState, newState, url, messageStr, brickConfiguration.getVersion());
+        BrickStateEvent message = new BrickStateEvent(projectConfiguration.getIdentifier(), stackConfiguration.getName(), brickType.name(), brickName, oldState, newState, url, messageStr, brickConfiguration.getVersion());
         getContext().actorFor(EndpointActor.ACTOR_PATH).tell(message, self());
     }
 
-    private void generateMsgAndSend(BrickStartContext context,String url, BrickStateEvent.State oldState, BrickStateEvent.State newState) {
+    private void generateMsgAndSend(BrickStartContext context, String url, BrickStateEvent.State oldState, BrickStateEvent.State newState) {
         generateMsgAndSend(context, url, oldState, newState, "");
     }
 
