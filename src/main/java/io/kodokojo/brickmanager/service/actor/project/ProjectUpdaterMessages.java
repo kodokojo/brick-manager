@@ -24,6 +24,7 @@ import io.kodokojo.commons.model.User;
 import io.kodokojo.commons.service.actor.message.EventUserRequestMessage;
 
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 public interface ProjectUpdaterMessages {
 
@@ -47,16 +48,26 @@ public interface ProjectUpdaterMessages {
 
     class ListAndUpdateUserToProjectMsg extends EventUserRequestMessage {
 
+        private final String userIdentifier;
+
         private final UpdateData<User> user;
 
-        public ListAndUpdateUserToProjectMsg(User requester, Event request,UpdateData<User> user) {
+        public ListAndUpdateUserToProjectMsg(User requester, Event request,UpdateData<User> user, String userIdentifier) {
             super(requester, request);
             requireNonNull(user, "user must be defined.");
+            if (isBlank(userIdentifier)) {
+                throw new IllegalArgumentException("userIdentifier must be defined.");
+            }
             this.user = user;
+            this.userIdentifier = userIdentifier;
         }
 
         public UpdateData<User> getUser() {
             return user;
+        }
+
+        public String getUserIdentifier() {
+            return userIdentifier;
         }
     }
 

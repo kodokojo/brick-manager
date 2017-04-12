@@ -33,10 +33,10 @@ import io.kodokojo.commons.event.Event;
 import io.kodokojo.commons.event.EventBuilder;
 import io.kodokojo.commons.event.EventBuilderFactory;
 import io.kodokojo.commons.event.GsonEventSerializer;
-import io.kodokojo.commons.event.payload.BrickStateChanged;
 import io.kodokojo.commons.event.payload.ProjectConfigurationChangeUserRequest;
 import io.kodokojo.commons.event.payload.StackStarted;
 import io.kodokojo.commons.event.payload.TypeChange;
+import io.kodokojo.commons.event.payload.UserCreated;
 import io.kodokojo.commons.model.ProjectConfiguration;
 import io.kodokojo.commons.model.UpdateData;
 import io.kodokojo.commons.model.User;
@@ -52,6 +52,7 @@ import javaslang.control.Try;
 
 import static akka.event.Logging.getLogger;
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 public class EndpointActor extends AbstractEventEndpointActor {
 
@@ -105,9 +106,15 @@ public class EndpointActor extends AbstractEventEndpointActor {
                 msg = new ProjectConfigurationStarterActor.ProjectConfigurationStartMsg(requester, event, projectConfiguration, true);
                 break;
             case Event.PROJECTCONFIG_CHANGE_USER_REQUEST:
+                actorRef = getContext().actorFor(ACTOR_PATH);
                 ProjectConfigurationChangeUserRequest payload = event.getPayload(ProjectConfigurationChangeUserRequest.class);
-                payload.setRequest(event);
                 msg = payload;
+                break;
+            case Event.USER_CREATION_EVENT:
+                actorRef = getContext().actorFor(ACTOR_PATH);
+                UserCreated userCreated = event.getPayload(UserCreated.class);
+                User user = userFetcher.getUserByIdentifier(userCreated.getIdentifier());
+                msg = new ProjectUpdaterMessages.ListAndUpdateUserToProjectMsg(requester, event, new UpdateData<>(null, user),userCreated.getIdentifier());
                 break;
 
         }
@@ -152,16 +159,16 @@ public class EndpointActor extends AbstractEventEndpointActor {
                     msg.getUserIdentifiers().stream()
                             .map(userFetcher::getUserByIdentifier)
                             .map(u -> {
-                                UpdateData<User> updateData = null;
+                                UserUpdateData updateData = null;
                                 if (msg.getTypeChange() == TypeChange.ADD) {
-                                    updateData = new UpdateData<>(null, u);
+                                    updateData = new UserUpdateData(null, u, u.getIdentifier());
                                 } else {
-                                    updateData = new UpdateData<>(u, null);
+                                    updateData = new UserUpdateData(u, null, u.getIdentifier());
                                 }
                                 return updateData;
                             })
-                            .map(u -> new ProjectUpdaterMessages.ListAndUpdateUserToProjectMsg(msg.getRequester(), msg.originalEvent(), u))
-                    .forEach(m -> getContext().self().forward(m, getContext()));
+                            .map(u -> new ProjectUpdaterMessages.ListAndUpdateUserToProjectMsg(msg.getRequester(), msg.originalEvent(), u, u.userIdentifier))
+                            .forEach(m -> getContext().self().forward(m, getContext()));
                 });
     }
 
@@ -198,4 +205,18 @@ public class EndpointActor extends AbstractEventEndpointActor {
             }
         }
     }
+
+    private class UserUpdateData extends UpdateData<User> {
+
+        private String userIdentifier;
+
+        public UserUpdateData(User oldData, User newData, String userIdentifier) {
+            super(oldData, newData);
+            if (isBlank(userIdentifier)) {
+                throw new IllegalArgumentException("userIdentifier must be defined.");
+            }
+            this.userIdentifier = userIdentifier;
+        }
+    }
+
 }

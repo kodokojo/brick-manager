@@ -31,6 +31,7 @@ import io.kodokojo.commons.model.User;
 import io.kodokojo.commons.service.actor.message.EventUserRequestMessage;
 import io.kodokojo.commons.service.repository.ProjectFetcher;
 import io.kodokojo.commons.service.repository.ProjectRepository;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +39,7 @@ import java.util.Set;
 
 import static akka.event.Logging.getLogger;
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
 public class ListAndUpdateUserToProjectActor extends AbstractActor {
 
@@ -78,17 +80,23 @@ public class ListAndUpdateUserToProjectActor extends AbstractActor {
 
         ActorRef endpoint = getContext().actorFor(EndpointActor.ACTOR_PATH);
 
-        Set<String> projectConfigIds = projectFetcher.getProjectConfigIdsByUserIdentifier(msg.getUser().getOldData().getIdentifier());
-        projectConfigIds.forEach(projectConfigId -> {
-            ProjectConfiguration projectConfiguration = projectFetcher.getProjectConfigurationById(projectConfigId);
-            projectConfiguration.getStackConfigurations().forEach(stackConfiguration -> {
-                stackConfiguration.getBrickConfigurations().forEach(brickConfiguration -> {
-                    BrickUpdateUserActor.BrickUpdateUserMsg brickUpdateUserMsg = new BrickUpdateUserActor.BrickUpdateUserMsg(TypeChange.UPDATE, userList, projectConfiguration, stackConfiguration, brickConfiguration);
-                    endpoint.tell(brickUpdateUserMsg, self());
-                    nbBrickExpected++;
+        Set<String> projectConfigIds = projectFetcher.getProjectConfigIdsByUserIdentifier(msg.getUserIdentifier());
+        if (isEmpty(projectConfigIds)) {
+            ListAndUpdateUserToProjectResultMsg response = new ListAndUpdateUserToProjectResultMsg(initialMsg.getRequester(), initialMsg.originalEvent(), initialMsg, false);
+            originalSender.tell(response, self());
+            getContext().stop(self());
+        } else {
+            projectConfigIds.forEach(projectConfigId -> {
+                ProjectConfiguration projectConfiguration = projectFetcher.getProjectConfigurationById(projectConfigId);
+                projectConfiguration.getStackConfigurations().forEach(stackConfiguration -> {
+                    stackConfiguration.getBrickConfigurations().forEach(brickConfiguration -> {
+                        BrickUpdateUserActor.BrickUpdateUserMsg brickUpdateUserMsg = new BrickUpdateUserActor.BrickUpdateUserMsg(TypeChange.UPDATE, userList, projectConfiguration, stackConfiguration, brickConfiguration);
+                        endpoint.tell(brickUpdateUserMsg, self());
+                        nbBrickExpected++;
+                    });
                 });
             });
-        });
+        }
     }
 
     private void onBrickUpdateUserResponse(BrickUpdateUserActor.BrickUpdateUserResultMsg msg) {
