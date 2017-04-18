@@ -25,6 +25,7 @@ import akka.japi.pf.UnitPFBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.inject.Injector;
+import io.kodokojo.brickmanager.BrickConfigurerProvider;
 import io.kodokojo.brickmanager.BrickStartContext;
 import io.kodokojo.brickmanager.service.BrickManager;
 import io.kodokojo.brickmanager.service.actor.project.*;
@@ -68,6 +69,8 @@ public class EndpointActor extends AbstractEventEndpointActor {
 
     private final BrickManager brickManager;
 
+    private final BrickConfigurerProvider brickConfigurerProvider;
+
     private final BrickUrlFactory brickUrlFactory;
 
     private final DnsManager dnsManager;
@@ -90,6 +93,7 @@ public class EndpointActor extends AbstractEventEndpointActor {
         brickUrlFactory = injector.getInstance(BrickUrlFactory.class);
         applicationConfig = injector.getInstance(ApplicationConfig.class);
         brickManager = injector.getInstance(BrickManager.class);
+        brickConfigurerProvider = injector.getInstance(BrickConfigurerProvider.class);
     }
 
     @Override
@@ -169,6 +173,8 @@ public class EndpointActor extends AbstractEventEndpointActor {
                             })
                             .map(u -> new ProjectUpdaterMessages.ListAndUpdateUserToProjectMsg(msg.getRequester(), msg.originalEvent(), u, u.userIdentifier))
                             .forEach(m -> getContext().self().forward(m, getContext()));
+                }).match(BrickUpdateUserActor.BrickUpdateUserMsg.class, msg -> {
+                    dispatch(msg, sender(), getContext().actorOf(BrickUpdateUserActor.PROPS(applicationConfig, brickUrlFactory, brickConfigurerProvider)));
                 });
     }
 

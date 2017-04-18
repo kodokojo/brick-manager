@@ -31,7 +31,6 @@ import io.kodokojo.commons.model.User;
 import io.kodokojo.commons.service.actor.message.EventUserRequestMessage;
 import io.kodokojo.commons.service.repository.ProjectFetcher;
 import io.kodokojo.commons.service.repository.ProjectRepository;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +41,6 @@ import static java.util.Objects.requireNonNull;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 
 public class ListAndUpdateUserToProjectActor extends AbstractActor {
-
 
     private final LoggingAdapter LOGGER = getLogger(getContext().system(), this);
 
@@ -76,20 +74,25 @@ public class ListAndUpdateUserToProjectActor extends AbstractActor {
         originalSender = sender();
         initialMsg = msg;
 
-        List<UpdateData<User>> userList = Collections.singletonList(msg.getUser());
+        LOGGER.debug("Receive Update user with id '{}' for user :{}", msg.getUserIdentifier(), msg.getUserUpdateData());
+
+        List<UpdateData<User>> userList = Collections.singletonList(msg.getUserUpdateData());
 
         ActorRef endpoint = getContext().actorFor(EndpointActor.ACTOR_PATH);
 
         Set<String> projectConfigIds = projectFetcher.getProjectConfigIdsByUserIdentifier(msg.getUserIdentifier());
         if (isEmpty(projectConfigIds)) {
+            LOGGER.info("No project configuration affected to user if '{}'.", msg.getUserIdentifier());
             ListAndUpdateUserToProjectResultMsg response = new ListAndUpdateUserToProjectResultMsg(initialMsg.getRequester(), initialMsg.originalEvent(), initialMsg, false);
             originalSender.tell(response, self());
             getContext().stop(self());
         } else {
             projectConfigIds.forEach(projectConfigId -> {
+                LOGGER.debug("Fetching project for project configuration id {}", projectConfigId);
                 ProjectConfiguration projectConfiguration = projectFetcher.getProjectConfigurationById(projectConfigId);
                 projectConfiguration.getStackConfigurations().forEach(stackConfiguration -> {
                     stackConfiguration.getBrickConfigurations().forEach(brickConfiguration -> {
+                        LOGGER.debug("Requesting update for brick '{}' on project {}.", brickConfiguration.getName(), projectConfiguration.getName());
                         BrickUpdateUserActor.BrickUpdateUserMsg brickUpdateUserMsg = new BrickUpdateUserActor.BrickUpdateUserMsg(TypeChange.UPDATE, userList, projectConfiguration, stackConfiguration, brickConfiguration);
                         endpoint.tell(brickUpdateUserMsg, self());
                         nbBrickExpected++;

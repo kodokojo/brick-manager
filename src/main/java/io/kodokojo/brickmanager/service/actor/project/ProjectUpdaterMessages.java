@@ -62,7 +62,7 @@ public interface ProjectUpdaterMessages {
             this.userIdentifier = userIdentifier;
         }
 
-        public UpdateData<User> getUser() {
+        public UpdateData<User> getUserUpdateData() {
             return user;
         }
 
